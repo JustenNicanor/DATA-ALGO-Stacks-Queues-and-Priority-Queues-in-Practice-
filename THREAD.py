@@ -11,6 +11,7 @@ from rich.columns import Columns
 from rich.console import Group
 from rich.live import Live
 from rich.panel import Panel
+from random import choice, randint
 
 QUEUE_TYPES = {
     "fifo": Queue,
@@ -35,6 +36,7 @@ PRODUCTS = (
     ":thread:",
     ":yo-yo:",
 )
+
 
 class View:
     def __init__(self, buffer, producers, consumers):
@@ -112,6 +114,17 @@ class Worker(threading.Thread):
             sleep(delay / 100)
             self.progress += 1
 
+class Producer(Worker):
+    def __init__(self, speed, buffer, products):
+        super().__init__(speed, buffer)
+        self.products = products
+
+    def run(self):
+        while True:
+            self.product = choice(self.products)
+            self.simulate_work()
+            self.buffer.put(self.product)
+            self.simulate_idle()
 
 def main(args):
     buffer = QUEUE_TYPES[args.queue]()
