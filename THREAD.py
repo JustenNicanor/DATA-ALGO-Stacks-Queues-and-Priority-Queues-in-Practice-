@@ -84,7 +84,7 @@ class View:
             padding + worker.state, align="left", vertical="middle"
         )
         return Panel(align, height=5, title=title)
-    
+  
 class Worker(threading.Thread):
     def __init__(self, speed, buffer):
         super().__init__(daemon=True)
@@ -134,25 +134,6 @@ class Consumer(Worker):
             self.buffer.task_done()
             self.simulate_idle()
 
-def main(args):
-    buffer = QUEUE_TYPES[args.queue]()
-    products = PRIORITIZED_PRODUCTS if args.queue == "heap" else PRODUCTS
-    producers = [
-        Producer(args.producer_speed, buffer, products)
-        for _ in range(args.producers)
-    ]
-    consumers = [
-        Consumer(args.consumer_speed, buffer) for _ in range(args.consumers)
-    ]
-
-    for producer in producers:
-        producer.start()
-
-    for consumer in consumers:
-        consumer.start()
-
-    view = View(buffer, producers, consumers)
-    view.animate()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -163,11 +144,6 @@ def parse_args():
     parser.add_argument("-cs", "--consumer-speed", type=int, default=1)
     return parser.parse_args()
 
-if __name__ == "__main__":
-    try:
-        main(parse_args())
-    except KeyboardInterrupt:
-        pass
 
 def main(args):
     buffer = QUEUE_TYPES[args.queue]()
@@ -214,4 +190,22 @@ def main(args):
         Producer(args.producer_speed, buffer, products)
         for _ in range(args.producers)
     ]
+    consumers = [
+        Consumer(args.consumer_speed, buffer) for _ in range(args.consumers)
+    ]
 
+    for producer in producers:
+        producer.start()
+
+    for consumer in consumers:
+        consumer.start()
+
+    view = View(buffer, producers, consumers)
+    view.animate()
+
+if __name__ == "__main__":
+    try:
+        main(parse_args())
+    except KeyboardInterrupt:
+        pass
+    
